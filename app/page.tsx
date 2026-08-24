@@ -17,7 +17,7 @@ export default function Home() {
           <span><strong>San Agustín</strong><small>Comunidad de fe</small></span>
         </a>
         <div className="nav-links">
-          <a href="#nosotros">Nosotros</a><a href="#misa-en-vivo">En vivo</a><a href="#horarios">Horarios</a><a href="#contacto">Contacto</a>
+          <a href="#nosotros">Nosotros</a><a href="#misa-en-vivo">En vivo</a><a href="#horarios">Horarios</a><a href="#donaciones">Donar</a><a href="#contacto">Contacto</a>
         </div>
         <a className="nav-cta" href="#horarios">Visítanos</a>
       </nav>
@@ -61,6 +61,27 @@ export default function Home() {
         <p className="section-kicker">Estamos cerca</p><h2>Nos encantaría conocerte.</h2>
         <p>Escríbenos para recibir información, pedir oración o planear tu primera visita.</p>
         <div className="contact-actions"><a className="button button-primary" href="mailto:hola@iglesiasanagustin.org">Enviar un mensaje</a><a className="button button-outline" href="#horarios">Planear mi visita</a></div>
+      </section>
+
+      <section className="donations" id="donaciones">
+        <div className="donations-copy">
+          <p className="section-kicker light">Tu generosidad hace la diferencia</p>
+          <h2>Apoya nuestra misión.</h2>
+          <p>Cada donación nos ayuda a servir a nuestra comunidad, sostener nuestros ministerios y mantener abiertas las puertas de San Agustín.</p>
+        </div>
+        <div className="donation-options">
+          <article className="donation-card">
+            <span className="donation-icon" aria-hidden="true">$</span>
+            <div><p>Donar con</p><h3>Cash App</h3><small>$PNL2026</small></div>
+            <a className="button donation-button" href="https://cash.app/$PNL2026" target="_blank" rel="noopener noreferrer">Abrir Cash App <span>→</span></a>
+          </article>
+          <article className="donation-card">
+            <span className="donation-icon zelle-icon" aria-hidden="true">Z</span>
+            <div><p>Enviar por</p><h3>Zelle</h3><small>Número registrado</small></div>
+            <strong className="zelle-number">773-798-4107</strong>
+          </article>
+          <p className="donation-note">Antes de enviar, verifica en tu aplicación que el destinatario sea el correcto.</p>
+        </div>
       </section>
 
       <section className="app-section" id="aplicacion">
