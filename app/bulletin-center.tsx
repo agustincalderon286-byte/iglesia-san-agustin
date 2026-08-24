@@ -14,12 +14,13 @@ export default function BulletinCenter() {
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
   const [message, setMessage] = useState('');
+  const [youtubeUrl, setYoutubeUrl] = useState('');
 
   async function loadBulletins() {
     const response = await fetch('/api/bulletins', { cache: 'no-store' });
     if (response.ok) setBulletins(await response.json());
   }
-  useEffect(() => { loadBulletins(); }, []);
+  useEffect(() => { loadBulletins(); fetch('/api/live', { cache: 'no-store' }).then(r => r.json()).then(data => setYoutubeUrl(data.youtube_url || '')); }, []);
 
   async function openShare() {
     setView('share');
@@ -40,6 +41,12 @@ export default function BulletinCenter() {
     const response = await fetch(`/api/bulletins?id=${id}`, { method: 'DELETE', headers: { authorization: `Bearer ${pin}` } });
     if (response.ok) { setMessage('Boletín borrado.'); await loadBulletins(); } else setMessage('PIN incorrecto.');
   }
+  async function saveLive() {
+    setMessage('Guardando transmisión…');
+    const response = await fetch('/api/live', { method: 'POST', headers: { 'content-type': 'application/json', authorization: `Bearer ${pin}` }, body: JSON.stringify({ youtube_url: youtubeUrl }) });
+    if (response.ok) setMessage('¡Transmisión actualizada! Recarga la página para verla.');
+    else setMessage(response.status === 401 ? 'PIN incorrecto.' : 'Pega un enlace válido de YouTube.');
+  }
 
   return <>
     <div className="utility-buttons" aria-label="Compartir y boletines">
@@ -51,7 +58,7 @@ export default function BulletinCenter() {
         <button className="modal-close" onClick={() => setView('closed')} aria-label="Cerrar">×</button>
         {view === 'share' && <div className="share-panel"><p className="section-kicker">Comparte la fe</p><h2>Escanea y abre la app</h2>{qr && <img className="qr-code" src={qr} alt="Código QR para abrir Iglesia San Agustín" />}<p>Apunta la cámara del teléfono al código.</p><button className="button button-primary" onClick={nativeShare}>Compartir enlace</button></div>}
         {view === 'bulletins' && <div><div className="modal-heading"><div><p className="section-kicker">Nuestra comunidad</p><h2>Boletines</h2></div><button className="admin-link" onClick={() => { setMessage(''); setView('admin'); }}>Administrar</button></div><div className="bulletin-list">{bulletins.length === 0 && <div className="empty-bulletin"><span>♡</span><p>Aún no hay boletines publicados.</p></div>}{bulletins.map(item => <article className="bulletin-card" key={item.id}><time>{new Date(item.created_at).toLocaleDateString('es-US', { day: 'numeric', month: 'long', year: 'numeric' })}</time><h3>{item.title}</h3><p>{item.body}</p></article>)}</div></div>}
-        {view === 'admin' && <form className="admin-panel" onSubmit={publish}><p className="section-kicker">Panel privado</p><h2>Nuevo boletín</h2><label>PIN privado<input type="password" inputMode="numeric" value={pin} onChange={e => setPin(e.target.value)} required autoComplete="current-password" /></label><label>Título<input value={title} onChange={e => setTitle(e.target.value)} maxLength={100} required placeholder="Ej. Misa especial este domingo" /></label><label>Mensaje<textarea value={body} onChange={e => setBody(e.target.value)} maxLength={1000} required rows={5} placeholder="Escribe aquí el anuncio para la comunidad…" /></label><button className="button button-primary" type="submit">Publicar boletín</button>{message && <p className="admin-message" role="status">{message}</p>}{bulletins.length > 0 && <details><summary>Administrar publicados</summary>{bulletins.map(item => <div className="admin-item" key={item.id}><span>{item.title}</span><button type="button" onClick={() => remove(item.id)}>Borrar</button></div>)}</details>}</form>}
+        {view === 'admin' && <form className="admin-panel" onSubmit={publish}><p className="section-kicker">Panel privado</p><h2>Administrar</h2><label>PIN privado<input type="password" inputMode="numeric" value={pin} onChange={e => setPin(e.target.value)} required autoComplete="current-password" /></label><div className="live-admin"><h3>Misa en vivo</h3><label>Enlace de YouTube<input type="url" value={youtubeUrl} onChange={e => setYoutubeUrl(e.target.value)} placeholder="https://youtube.com/live/..." /></label><button className="button button-outline" type="button" onClick={saveLive}>Actualizar transmisión</button></div><div className="bulletin-admin"><h3>Nuevo boletín</h3><label>Título<input value={title} onChange={e => setTitle(e.target.value)} maxLength={100} required placeholder="Ej. Misa especial este domingo" /></label><label>Mensaje<textarea value={body} onChange={e => setBody(e.target.value)} maxLength={1000} required rows={5} placeholder="Escribe aquí el anuncio para la comunidad…" /></label><button className="button button-primary" type="submit">Publicar boletín</button></div>{message && <p className="admin-message" role="status">{message}</p>}{bulletins.length > 0 && <details><summary>Administrar publicados</summary>{bulletins.map(item => <div className="admin-item" key={item.id}><span>{item.title}</span><button type="button" onClick={() => remove(item.id)}>Borrar</button></div>)}</details>}</form>}
       </section>
     </div>}
   </>;

@@ -1,5 +1,6 @@
 import PwaControls from './pwa-controls';
 import BulletinCenter from './bulletin-center';
+import LiveMass from './live-mass';
 
 const services = [
   { day: 'Domingo', time: '9:00 AM y 12:00 PM', label: 'Santa Misa' },
@@ -16,7 +17,7 @@ export default function Home() {
           <span><strong>San Agustín</strong><small>Comunidad de fe</small></span>
         </a>
         <div className="nav-links">
-          <a href="#nosotros">Nosotros</a><a href="#horarios">Horarios</a><a href="#contacto">Contacto</a>
+          <a href="#nosotros">Nosotros</a><a href="#misa-en-vivo">En vivo</a><a href="#horarios">Horarios</a><a href="#contacto">Contacto</a>
         </div>
         <a className="nav-cta" href="#horarios">Visítanos</a>
       </nav>
@@ -46,6 +47,8 @@ export default function Home() {
         <div><p className="section-kicker">Bienvenido a casa</p><h2>La fe se vive mejor en comunidad.</h2></div>
         <div><p>Somos una familia que celebra, aprende y sirve junta. No importa de dónde vienes o en qué momento de tu camino te encuentres: aquí hay un lugar para ti.</p><a className="text-link" href="#contacto">Quiero saber más <span>→</span></a></div>
       </section>
+
+      <LiveMass />
 
       <section className="schedule-section" id="horarios">
         <div className="schedule-intro"><p className="section-kicker light">Encuéntranos esta semana</p><h2>Ven tal como eres.</h2><p>Siempre será un buen momento para encontrarnos, orar y compartir.</p></div>
