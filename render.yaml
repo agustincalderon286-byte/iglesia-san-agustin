@@ -8,3 +8,15 @@ services:
     envVars:
       - key: NODE_VERSION
         value: 24.19.0
+      - key: DATABASE_URL
+        fromDatabase:
+          name: iglesia-san-agustin-db
+          property: connectionString
+      - key: ADMIN_PIN
+        sync: false
+
+databases:
+  - name: iglesia-san-agustin-db
+    plan: free
+    databaseName: iglesia_san_agustin
+    user: iglesia_admin
