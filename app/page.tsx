@@ -1,4 +1,5 @@
 import PwaControls from './pwa-controls';
+import BulletinCenter from './bulletin-center';
 
 const services = [
   { day: 'Domingo', time: '9:00 AM y 12:00 PM', label: 'Santa Misa' },
@@ -19,6 +20,8 @@ export default function Home() {
         </div>
         <a className="nav-cta" href="#horarios">Visítanos</a>
       </nav>
+
+      <BulletinCenter />
 
       <section className="hero" id="inicio">
         <div className="hero-glow" aria-hidden="true" />
