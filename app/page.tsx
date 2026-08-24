@@ -1,3 +1,5 @@
+import PwaControls from './pwa-controls';
+
 const services = [
   { day: 'Domingo', time: '9:00 AM y 12:00 PM', label: 'Santa Misa' },
   { day: 'Miércoles', time: '7:00 PM', label: 'Oración comunitaria' },
@@ -53,6 +55,16 @@ export default function Home() {
         <p className="section-kicker">Estamos cerca</p><h2>Nos encantaría conocerte.</h2>
         <p>Escríbenos para recibir información, pedir oración o planear tu primera visita.</p>
         <div className="contact-actions"><a className="button button-primary" href="mailto:hola@iglesiasanagustin.org">Enviar un mensaje</a><a className="button button-outline" href="#horarios">Planear mi visita</a></div>
+      </section>
+
+      <section className="app-section" id="aplicacion">
+        <div className="app-badge" aria-hidden="true">✝</div>
+        <div className="app-copy">
+          <p className="section-kicker light">La iglesia en tu teléfono</p>
+          <h2>Instala nuestra aplicación.</h2>
+          <p>Guarda San Agustín en tu pantalla de inicio y activa los avisos para estar al día con misas, actividades y mensajes de la comunidad.</p>
+        </div>
+        <PwaControls />
       </section>
 
       <footer><a className="brand footer-brand" href="#inicio"><span className="brand-mark" aria-hidden="true">✝</span><span><strong>San Agustín</strong><small>Comunidad de fe</small></span></a><p>© 2026 Iglesia San Agustín. Hecho con fe y esperanza.</p><a href="#inicio">Volver arriba ↑</a></footer>
