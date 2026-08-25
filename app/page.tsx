@@ -3,6 +3,8 @@ import BulletinCenter from './bulletin-center';
 import LiveMass from './live-mass';
 import BibleReader from './bible-reader';
 import AnalyticsTracker from './analytics-tracker';
+import RefreshButton from './refresh-button';
+import ContactForm from './contact-form';
 
 const services = [
   { day: 'Domingo', time: '9:00 AM y 12:00 PM', label: 'Santa Misa' },
@@ -22,7 +24,7 @@ export default function Home() {
         <div className="nav-links">
           <a href="#nosotros">Nosotros</a><a href="#biblia" data-track="bible_open">Biblia</a><a href="#misa-en-vivo">En vivo</a><a href="#horarios">Horarios</a><a href="#donaciones">Donar</a><a href="#contacto">Contacto</a>
         </div>
-        <a className="nav-cta" href="#horarios">Visítanos</a>
+        <div className="nav-actions"><RefreshButton /><a className="nav-cta" href="#horarios">Visítanos</a></div>
       </nav>
 
       <BulletinCenter />
@@ -65,7 +67,8 @@ export default function Home() {
       <section className="contact" id="contacto">
         <p className="section-kicker">Estamos cerca</p><h2>Nos encantaría conocerte.</h2>
         <p>Escríbenos para recibir información, pedir oración o planear tu primera visita.</p>
-        <div className="contact-actions"><a className="button button-primary" href="mailto:hola@iglesiasanagustin.org">Enviar un mensaje</a><a className="button button-outline" href="#horarios">Planear mi visita</a></div>
+        <ContactForm />
+        <div className="contact-actions"><a className="button button-outline" href="#horarios">Planear mi visita</a></div>
       </section>
 
       <section className="donations" id="donaciones">
@@ -99,7 +102,7 @@ export default function Home() {
         <PwaControls />
       </section>
 
-      <footer><a className="brand footer-brand" href="#inicio"><span className="brand-mark" aria-hidden="true">✝</span><span><strong>San Agustín</strong><small>Comunidad de fe</small></span></a><p>© 2026 Iglesia San Agustín. Estadísticas anónimas, sin nombres ni ubicación.</p><a href="#inicio">Volver arriba ↑</a></footer>
+      <footer><a className="brand footer-brand" href="#inicio"><span className="brand-mark" aria-hidden="true">✝</span><span><strong>San Agustín</strong><small>Comunidad de fe</small></span></a><p>© 2026 Iglesia San Agustín. Estadísticas anónimas; los mensajes privados sólo se usan para responder.</p><a href="#inicio">Volver arriba ↑</a></footer>
     </main>
   );
 }

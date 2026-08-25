@@ -4,7 +4,8 @@ import { FormEvent, useEffect, useState } from 'react';
 import QRCode from 'qrcode';
 
 type Bulletin = { id: number; title: string; body: string; created_at: string };
-type Stats = { period_days: number; subscribers: number; bulletins: number; unique_visitors: number; totals: Record<string, number>; daily: Array<{ day: string; visits: number; visitors: number }> };
+type ContactMessage = { id: number; name: string; contact: string; body: string; is_read: boolean; created_at: string };
+type Stats = { period_days: number; subscribers: number; bulletins: number; messages: number; unread_messages: number; unique_visitors: number; totals: Record<string, number>; daily: Array<{ day: string; visits: number; visitors: number }> };
 type View = 'closed' | 'bulletins' | 'share' | 'admin';
 
 export default function BulletinCenter() {
@@ -20,6 +21,8 @@ export default function BulletinCenter() {
   const [zoomUrl, setZoomUrl] = useState('');
   const [stats, setStats] = useState<Stats | null>(null);
   const [statsLoading, setStatsLoading] = useState(false);
+  const [inbox, setInbox] = useState<ContactMessage[] | null>(null);
+  const [inboxLoading, setInboxLoading] = useState(false);
 
   async function loadBulletins() {
     const response = await fetch('/api/bulletins', { cache: 'no-store' });
@@ -67,6 +70,28 @@ export default function BulletinCenter() {
     if (response.ok) setStats(await response.json());
     else setMessage(response.status === 401 ? 'PIN incorrecto.' : 'No se pudieron cargar las estadísticas.');
   }
+  async function loadMessages() {
+    if (!pin) { setMessage('Escribe el PIN para abrir el buzón.'); return; }
+    setInboxLoading(true); setMessage('');
+    const response = await fetch('/api/messages', { cache: 'no-store', headers: { authorization: `Bearer ${pin}` } });
+    setInboxLoading(false);
+    if (response.ok) setInbox(await response.json());
+    else setMessage(response.status === 401 ? 'PIN incorrecto.' : 'No se pudo abrir el buzón.');
+  }
+  async function setMessageRead(item: ContactMessage, isRead: boolean) {
+    const response = await fetch('/api/messages', { method: 'PATCH', headers: { 'content-type': 'application/json', authorization: `Bearer ${pin}` }, body: JSON.stringify({ id: item.id, is_read: isRead }) });
+    if (response.ok) setInbox(current => current?.map(messageItem => messageItem.id === item.id ? { ...messageItem, is_read: isRead } : messageItem) || null);
+    else setMessage('No se pudo actualizar el mensaje.');
+  }
+  async function removeMessage(item: ContactMessage) {
+    if (!window.confirm(`¿Borrar el mensaje de ${item.name}?`)) return;
+    const response = await fetch(`/api/messages?id=${item.id}`, { method: 'DELETE', headers: { authorization: `Bearer ${pin}` } });
+    if (response.ok) setInbox(current => current?.filter(messageItem => messageItem.id !== item.id) || null);
+    else setMessage('No se pudo borrar el mensaje.');
+  }
+  function replyHref(contact: string) {
+    return contact.includes('@') ? `mailto:${contact}` : `tel:${contact.replace(/[^+\d]/g, '')}`;
+  }
 
   return <>
     <div className="utility-buttons" aria-label="Compartir y boletines">
@@ -90,9 +115,22 @@ export default function BulletinCenter() {
               <article><strong>{stats.totals.notification_open || 0}</strong><span>notificaciones abiertas</span></article>
               <article><strong>{stats.totals.zoom_click || 0}</strong><span>entradas a Zoom</span></article>
               <article><strong>{(stats.totals.cashapp_click || 0) + (stats.totals.zelle_click || 0)}</strong><span>interés en donaciones</span></article>
-              <article><strong>{(stats.totals.share_sms || 0) + (stats.totals.share_whatsapp || 0) + (stats.totals.share_facebook || 0) + (stats.totals.share_native || 0)}</strong><span>veces compartida</span></article>
+              <article><strong>{(stats.totals.share_sms || 0) + (stats.totals.share_whatsapp || 0) + (stats.totals.share_facebook || 0) + (stats.totals.share_native || 0) + (stats.totals.bible_share || 0)}</strong><span>veces compartida</span></article>
               <article><strong>{stats.totals.bible_chapter || 0}</strong><span>capítulos leídos</span></article>
+              <article><strong>{stats.messages}</strong><span>mensajes en 30 días</span></article>
             </div><p className="stats-note">Últimos 30 días · No se guardan nombres, teléfonos ni ubicación.</p></>}
+          </div>
+          <div className="inbox-admin">
+            <div className="inbox-title"><div><p>Mensajes privados</p><h3>Buzón {inbox && <span>{inbox.filter(item => !item.is_read).length} nuevos</span>}</h3></div><button className="button button-outline" type="button" onClick={loadMessages}>{inboxLoading ? 'Abriendo…' : inbox ? 'Actualizar' : 'Abrir buzón'}</button></div>
+            {inbox && <div className="inbox-list">
+              {inbox.length === 0 && <p className="inbox-empty">Todavía no hay mensajes.</p>}
+              {inbox.map(item => <article className={`inbox-card${item.is_read ? ' is-read' : ''}`} key={item.id}>
+                <header><div><strong>{item.name}</strong><time>{new Date(item.created_at).toLocaleString('es-US', { dateStyle: 'medium', timeStyle: 'short' })}</time></div>{!item.is_read && <span>Nuevo</span>}</header>
+                <p>{item.body}</p>
+                {item.contact && <a className="inbox-contact" href={replyHref(item.contact)}>Responder: {item.contact}</a>}
+                <div className="inbox-actions"><button type="button" onClick={() => setMessageRead(item, !item.is_read)}>{item.is_read ? 'Marcar no leído' : 'Marcar leído'}</button><button className="delete-message" type="button" onClick={() => removeMessage(item)}>Borrar</button></div>
+              </article>)}
+            </div>}
           </div>
           <div className="live-admin"><h3>Misa en vivo</h3><label>Enlace de YouTube<input type="url" value={youtubeUrl} onChange={e => setYoutubeUrl(e.target.value)} placeholder="https://youtube.com/live/..." /></label><label>Enlace de Zoom<input type="url" value={zoomUrl} onChange={e => setZoomUrl(e.target.value)} placeholder="https://zoom.us/j/..." /></label><button className="button button-outline" type="button" onClick={saveLive}>Actualizar transmisión y Zoom</button></div>
           <div className="bulletin-admin"><h3>Nuevo boletín</h3><label>Título<input value={title} onChange={e => setTitle(e.target.value)} maxLength={100} required placeholder="Ej. Misa especial este domingo" /></label><label>Mensaje<textarea value={body} onChange={e => setBody(e.target.value)} maxLength={1000} required rows={5} placeholder="Escribe aquí el anuncio para la comunidad…" /></label><button className="button button-primary" type="submit">Publicar boletín</button></div>

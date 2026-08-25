@@ -7,6 +7,7 @@ type BookSummary = { number: number; name: string; chapters: number; file: strin
 type BooksIndex = { translation: string; license: string; source: string; books: BookSummary[] };
 type BibleBook = { number: number; name: string; chapters: Array<Array<[number, string]>> };
 type DailyReading = { book: number; chapter: number; verse: number };
+type ShareTarget = { reference: string; text: string; book: number; chapter: number; verse: number };
 
 const DAILY_READINGS: DailyReading[] = [
   { book: 43, chapter: 3, verse: 16 }, { book: 19, chapter: 23, verse: 1 },
@@ -24,11 +25,21 @@ export default function BibleReader() {
   const [fontSize, setFontSize] = useState(18);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [daily, setDaily] = useState<DailyReading>(DAILY_READINGS[0]);
+  const [targetVerse, setTargetVerse] = useState<number | null>(null);
+  const [shareTarget, setShareTarget] = useState<ShareTarget | null>(null);
+  const [shareStatus, setShareStatus] = useState('');
 
   useEffect(() => {
     fetch('/bible/books.json').then(response => response.json()).then(setIndex);
     try { setFavorites(JSON.parse(localStorage.getItem('san-agustin-bible-favorites') || '[]')); } catch { setFavorites([]); }
     setDaily(DAILY_READINGS[Math.floor(Date.now() / 86400000) % DAILY_READINGS.length]);
+    const params = new URLSearchParams(window.location.search);
+    const requestedBook = Number(params.get('libro'));
+    const requestedChapter = Number(params.get('capitulo'));
+    const requestedVerse = Number(params.get('versiculo'));
+    if (requestedBook >= 1 && requestedBook <= 66) setBookNumber(requestedBook);
+    if (requestedChapter >= 1 && requestedChapter <= 150) setChapter(requestedChapter);
+    if (requestedVerse >= 1 && requestedVerse <= 176) setTargetVerse(requestedVerse);
   }, []);
 
   useEffect(() => {
@@ -42,6 +53,12 @@ export default function BibleReader() {
   useEffect(() => {
     if (book) trackAnalytics('bible_chapter', { book: book.name, chapter });
   }, [book, chapter]);
+
+  useEffect(() => {
+    if (!book || !targetVerse || !book.chapters[chapter - 1]) return;
+    const timer = window.setTimeout(() => document.getElementById(`versiculo-${targetVerse}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 250);
+    return () => window.clearTimeout(timer);
+  }, [book, chapter, targetVerse]);
 
   const verses = book?.chapters[chapter - 1] || [];
   const bookSummary = index?.books.find(item => item.number === bookNumber);
@@ -64,11 +81,42 @@ export default function BibleReader() {
     trackAnalytics('bible_favorite');
   }
 
-  async function shareVerse(reference: string, text: string) {
-    const message = `${reference} — ${text}`;
-    if (navigator.share) await navigator.share({ title: reference, text: message, url: `${window.location.origin}/#biblia` });
-    else await navigator.clipboard.writeText(`${message} ${window.location.origin}/#biblia`);
-    trackAnalytics('bible_share', { reference });
+  function verseUrl(bookValue: number, chapterValue: number, verseValue: number) {
+    const url = new URL('/', window.location.origin);
+    url.searchParams.set('libro', String(bookValue));
+    url.searchParams.set('capitulo', String(chapterValue));
+    url.searchParams.set('versiculo', String(verseValue));
+    url.hash = 'biblia';
+    return url.toString();
+  }
+
+  function openVerseShare(reference: string, text: string, verse: number) {
+    setShareStatus('');
+    setShareTarget({ reference, text, book: bookNumber, chapter, verse });
+  }
+
+  function trackVerseShare(channel: string) {
+    if (shareTarget) trackAnalytics('bible_share', { reference: shareTarget.reference, channel });
+  }
+
+  async function copyVerseLink() {
+    if (!shareTarget) return;
+    const url = verseUrl(shareTarget.book, shareTarget.chapter, shareTarget.verse);
+    await navigator.clipboard.writeText(`${shareTarget.reference} — ${shareTarget.text} ${url}`);
+    setShareStatus('¡Versículo y enlace copiados!');
+    trackVerseShare('copy');
+  }
+
+  async function shareMore() {
+    if (!shareTarget) return;
+    const url = verseUrl(shareTarget.book, shareTarget.chapter, shareTarget.verse);
+    try {
+      if (navigator.share) await navigator.share({ title: shareTarget.reference, text: `${shareTarget.reference} — ${shareTarget.text}`, url });
+      else await copyVerseLink();
+      trackVerseShare('native');
+    } catch {
+      // Cerrar la hoja de compartir no es un error para la persona.
+    }
   }
 
   return <section className="bible-section" id="biblia">
@@ -88,10 +136,24 @@ export default function BibleReader() {
         {!loading && verses.map(([number, text]) => {
           const reference = `${book?.name} ${chapter}:${number}`;
           const favorite = favorites.includes(reference);
-          return <div className="verse-row" key={number} id={`versiculo-${number}`}><sup>{number}</sup><p>{text}</p><div className="verse-actions"><button className={favorite ? 'is-favorite' : ''} onClick={() => toggleFavorite(reference)} aria-label={favorite ? `Quitar ${reference} de favoritos` : `Guardar ${reference} en favoritos`}>{favorite ? '♥' : '♡'}</button><button onClick={() => shareVerse(reference, text)} aria-label={`Compartir ${reference}`}>↗</button></div></div>;
+          return <div className={`verse-row${targetVerse === number ? ' is-targeted' : ''}`} key={number} id={`versiculo-${number}`}><sup>{number}</sup><p>{text}</p><div className="verse-actions"><button className={favorite ? 'is-favorite' : ''} onClick={() => toggleFavorite(reference)} aria-label={favorite ? `Quitar ${reference} de favoritos` : `Guardar ${reference} en favoritos`}>{favorite ? '♥' : '♡'}</button><button onClick={() => openVerseShare(reference, text, number)} aria-label={`Compartir ${reference}`}>↗</button></div></div>;
         })}
       </article>
       <p className="bible-license">Reina‑Valera 1909 · Dominio público, CC0 1.0. Los favoritos se guardan solamente en este teléfono.</p>
     </div>
+    {shareTarget && <div className="verse-share-backdrop" onMouseDown={() => setShareTarget(null)}>
+      <section className="verse-share-panel" role="dialog" aria-modal="true" aria-label={`Compartir ${shareTarget.reference}`} onMouseDown={event => event.stopPropagation()}>
+        <button className="modal-close" type="button" onClick={() => setShareTarget(null)} aria-label="Cerrar">×</button>
+        <p className="section-kicker">Comparte la Palabra</p><h3>{shareTarget.reference}</h3><blockquote>{shareTarget.text}</blockquote>
+        <div className="verse-share-options">
+          <a className="share-option share-sms" href={`sms:?body=${encodeURIComponent(`${shareTarget.reference} — ${shareTarget.text} ${verseUrl(shareTarget.book, shareTarget.chapter, shareTarget.verse)}`)}`} onClick={() => trackVerseShare('sms')}><span aria-hidden="true">✉</span><strong>Mensaje</strong></a>
+          <a className="share-option share-whatsapp" href={`https://wa.me/?text=${encodeURIComponent(`${shareTarget.reference} — ${shareTarget.text} ${verseUrl(shareTarget.book, shareTarget.chapter, shareTarget.verse)}`)}`} target="_blank" rel="noopener noreferrer" onClick={() => trackVerseShare('whatsapp')}><span aria-hidden="true">W</span><strong>WhatsApp</strong></a>
+          <a className="share-option share-facebook" href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(verseUrl(shareTarget.book, shareTarget.chapter, shareTarget.verse))}`} target="_blank" rel="noopener noreferrer" onClick={() => trackVerseShare('facebook')}><span aria-hidden="true">f</span><strong>Facebook</strong></a>
+          <button className="share-option share-copy" type="button" onClick={copyVerseLink}><span aria-hidden="true">⧉</span><strong>Copiar</strong></button>
+        </div>
+        <button className="button button-outline share-more" type="button" onClick={shareMore}>Más aplicaciones</button>
+        {shareStatus && <p className="verse-share-status" role="status">{shareStatus}</p>}
+      </section>
+    </div>}
   </section>;
 }
