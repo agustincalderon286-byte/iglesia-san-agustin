@@ -16,7 +16,7 @@ export default function PwaControls() {
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js').then(async registration => {
         await registration.update();
-        if ('PushManager' in window && Notification.permission === 'granted') {
+        if ('PushManager' in window && 'Notification' in window && Notification.permission === 'granted') {
           setNotificationActive(Boolean(await registration.pushManager.getSubscription()));
         }
       }).catch(() => undefined);
