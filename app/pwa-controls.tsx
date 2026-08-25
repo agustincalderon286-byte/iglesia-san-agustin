@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { trackAnalytics } from './analytics-client';
 
 type InstallPrompt = Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: string }> };
 
@@ -33,6 +34,7 @@ export default function PwaControls() {
     if (installPrompt) {
       await installPrompt.prompt();
       const choice = await installPrompt.userChoice;
+      if (choice.outcome === 'accepted') trackAnalytics('app_install');
       setMessage(choice.outcome === 'accepted' ? '¡Aplicación instalada!' : 'Puedes instalarla cuando quieras.');
       setInstallPrompt(null);
     } else if (isIos) {
@@ -74,6 +76,7 @@ export default function PwaControls() {
         });
         if (!response.ok) throw new Error('Subscription could not be saved');
         setNotificationActive(true);
+        trackAnalytics('notifications_enabled');
         await registration.showNotification('Iglesia San Agustín', {
           body: '¡Listo! Recibirás los nuevos boletines y recordatorios en este teléfono.',
           icon: '/icon-192.png',

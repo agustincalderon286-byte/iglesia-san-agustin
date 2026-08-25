@@ -16,6 +16,6 @@ export default function LiveMass() {
     <div className="live-player">
       {settings.video_id ? <iframe src={`https://www.youtube.com/embed/${settings.video_id}?rel=0&playsinline=1`} title="Misa en vivo de la Iglesia San Agustín" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen /> : <div className="live-placeholder"><span aria-hidden="true">✝</span><h3>Próxima transmisión</h3><p>La misa aparecerá aquí cuando la iglesia publique el enlace en vivo.</p><small>Domingos · 9:00 AM y 12:00 PM</small></div>}
     </div>
-    {settings.zoom_url && <div className="zoom-access"><div><span aria-hidden="true">⌁</span><p><strong>Participa por Zoom</strong><small>Únete a la misa o reunión desde tu teléfono o computadora.</small></p></div><a className="button zoom-button" href={settings.zoom_url} target="_blank" rel="noopener noreferrer">Unirse por Zoom <span>→</span></a></div>}
+    {settings.zoom_url && <div className="zoom-access"><div><span aria-hidden="true">⌁</span><p><strong>Participa por Zoom</strong><small>Únete a la misa o reunión desde tu teléfono o computadora.</small></p></div><a className="button zoom-button" href={settings.zoom_url} target="_blank" rel="noopener noreferrer" data-track="zoom_click">Unirse por Zoom <span>→</span></a></div>}
   </section>;
 }

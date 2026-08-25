@@ -1,6 +1,8 @@
 import PwaControls from './pwa-controls';
 import BulletinCenter from './bulletin-center';
 import LiveMass from './live-mass';
+import BibleReader from './bible-reader';
+import AnalyticsTracker from './analytics-tracker';
 
 const services = [
   { day: 'Domingo', time: '9:00 AM y 12:00 PM', label: 'Santa Misa' },
@@ -11,13 +13,14 @@ const services = [
 export default function Home() {
   return (
     <main>
+      <AnalyticsTracker />
       <nav className="nav" aria-label="Navegación principal">
         <a className="brand" href="#inicio" aria-label="Iglesia San Agustín, inicio">
           <span className="brand-mark" aria-hidden="true">✝</span>
           <span><strong>San Agustín</strong><small>Comunidad de fe</small></span>
         </a>
         <div className="nav-links">
-          <a href="#nosotros">Nosotros</a><a href="#misa-en-vivo">En vivo</a><a href="#horarios">Horarios</a><a href="#donaciones">Donar</a><a href="#contacto">Contacto</a>
+          <a href="#nosotros">Nosotros</a><a href="#biblia" data-track="bible_open">Biblia</a><a href="#misa-en-vivo">En vivo</a><a href="#horarios">Horarios</a><a href="#donaciones">Donar</a><a href="#contacto">Contacto</a>
         </div>
         <a className="nav-cta" href="#horarios">Visítanos</a>
       </nav>
@@ -48,6 +51,8 @@ export default function Home() {
         <div><p>Somos una familia que celebra, aprende y sirve junta. No importa de dónde vienes o en qué momento de tu camino te encuentres: aquí hay un lugar para ti.</p><a className="text-link" href="#contacto">Quiero saber más <span>→</span></a></div>
       </section>
 
+      <BibleReader />
+
       <LiveMass />
 
       <section className="schedule-section" id="horarios">
@@ -73,12 +78,12 @@ export default function Home() {
           <article className="donation-card">
             <span className="donation-icon" aria-hidden="true">$</span>
             <div><p>Donar con</p><h3>Cash App</h3><small>$PNL2026</small></div>
-            <a className="button donation-button" href="https://cash.app/$PNL2026" target="_blank" rel="noopener noreferrer">Abrir Cash App <span>→</span></a>
+            <a className="button donation-button" href="https://cash.app/$PNL2026" target="_blank" rel="noopener noreferrer" data-track="cashapp_click">Abrir Cash App <span>→</span></a>
           </article>
           <article className="donation-card">
             <span className="donation-icon zelle-icon" aria-hidden="true">Z</span>
             <div><p>Enviar por</p><h3>Zelle</h3><small>Número registrado</small></div>
-            <strong className="zelle-number">773-798-4107</strong>
+            <a className="zelle-number" href="tel:+17737984107" data-track="zelle_click">773-798-4107</a>
           </article>
           <p className="donation-note">Antes de enviar, verifica en tu aplicación que el destinatario sea el correcto.</p>
         </div>
@@ -94,7 +99,7 @@ export default function Home() {
         <PwaControls />
       </section>
 
-      <footer><a className="brand footer-brand" href="#inicio"><span className="brand-mark" aria-hidden="true">✝</span><span><strong>San Agustín</strong><small>Comunidad de fe</small></span></a><p>© 2026 Iglesia San Agustín. Hecho con fe y esperanza.</p><a href="#inicio">Volver arriba ↑</a></footer>
+      <footer><a className="brand footer-brand" href="#inicio"><span className="brand-mark" aria-hidden="true">✝</span><span><strong>San Agustín</strong><small>Comunidad de fe</small></span></a><p>© 2026 Iglesia San Agustín. Estadísticas anónimas, sin nombres ni ubicación.</p><a href="#inicio">Volver arriba ↑</a></footer>
     </main>
   );
 }
