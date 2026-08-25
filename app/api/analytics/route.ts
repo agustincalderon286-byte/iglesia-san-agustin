@@ -6,7 +6,7 @@ const ALLOWED_EVENTS = new Set([
   'page_view', 'app_install', 'notifications_enabled', 'notification_open',
   'zoom_click', 'cashapp_click', 'zelle_click', 'bulletins_open', 'bible_open',
   'share_open', 'share_sms', 'share_whatsapp', 'share_facebook', 'share_native',
-  'bible_chapter', 'bible_share', 'bible_favorite',
+  'bible_chapter', 'bible_share', 'bible_favorite', 'manual_refresh', 'contact_message',
 ]);
 
 let pool: Pool | undefined;
@@ -31,6 +31,11 @@ async function ensureTables() {
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
   )`);
   await database().query('CREATE TABLE IF NOT EXISTS bulletins (id SERIAL PRIMARY KEY, title VARCHAR(100) NOT NULL, body VARCHAR(1000) NOT NULL, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW())');
+  await database().query(`CREATE TABLE IF NOT EXISTS contact_messages (
+    id BIGSERIAL PRIMARY KEY, name VARCHAR(80) NOT NULL, contact VARCHAR(160) NOT NULL DEFAULT '',
+    body VARCHAR(2000) NOT NULL, is_read BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  )`);
 }
 
 function authorized(request: Request) {
@@ -60,7 +65,7 @@ export async function GET(request: Request) {
   if (!authorized(request)) return Response.json({ error: 'Unauthorized' }, { status: 401 });
   try {
     await ensureTables();
-    const [events, visitors, subscribers, bulletins, daily] = await Promise.all([
+    const [events, visitors, subscribers, bulletins, messages, daily] = await Promise.all([
       database().query(`SELECT event, COUNT(*)::int AS total
         FROM analytics_events WHERE created_at >= NOW() - INTERVAL '30 days'
         GROUP BY event ORDER BY total DESC`),
@@ -68,6 +73,9 @@ export async function GET(request: Request) {
         FROM analytics_events WHERE event = 'page_view' AND created_at >= NOW() - INTERVAL '30 days'`),
       database().query('SELECT COUNT(*)::int AS total FROM push_subscriptions'),
       database().query('SELECT COUNT(*)::int AS total FROM bulletins'),
+      database().query(`SELECT
+        COUNT(*) FILTER (WHERE created_at >= NOW() - INTERVAL '30 days')::int AS total,
+        COUNT(*) FILTER (WHERE NOT is_read)::int AS unread FROM contact_messages`),
       database().query(`SELECT TO_CHAR(created_at AT TIME ZONE 'America/Chicago', 'YYYY-MM-DD') AS day,
         COUNT(*) FILTER (WHERE event = 'page_view')::int AS visits,
         COUNT(DISTINCT visitor_id) FILTER (WHERE event = 'page_view')::int AS visitors
@@ -80,6 +88,8 @@ export async function GET(request: Request) {
       unique_visitors: Number(visitors.rows[0]?.total || 0),
       subscribers: Number(subscribers.rows[0]?.total || 0),
       bulletins: Number(bulletins.rows[0]?.total || 0),
+      messages: Number(messages.rows[0]?.total || 0),
+      unread_messages: Number(messages.rows[0]?.unread || 0),
       daily: daily.rows,
     });
   } catch {
