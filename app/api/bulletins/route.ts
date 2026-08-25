@@ -60,7 +60,7 @@ export async function POST(request: Request) {
   const data = await request.json(); const title = String(data.title || '').trim().slice(0, 100); const body = String(data.body || '').trim().slice(0, 1000);
   if (!title || !body) return Response.json({ error: 'Missing fields' }, { status: 400 });
   await ensureTable(); const result = await database().query('INSERT INTO bulletins (title, body) VALUES ($1, $2) RETURNING id, title, body, created_at', [title, body]);
-  const notifications = await sendBulletinNotifications(title, body);
+  const notifications = await sendBulletinNotifications(title, body).catch(() => ({ sent: 0, subscribed: 0 }));
   return Response.json({ ...result.rows[0], notifications }, { status: 201 });
 }
 export async function DELETE(request: Request) {
