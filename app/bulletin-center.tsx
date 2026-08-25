@@ -5,6 +5,9 @@ import QRCode from 'qrcode';
 
 type Bulletin = { id: number; title: string; body: string; created_at: string };
 type ContactMessage = { id: number; name: string; contact: string; body: string; is_read: boolean; created_at: string };
+type PrayerAdminRequest = { id: number; display_name: string; category: string; title: string; body: string; is_approved: boolean; prayer_state: string; created_at: string };
+type PrayerAdminReply = { id: number; request_id: number; request_title: string; display_name: string; body: string; is_approved: boolean; created_at: string };
+type PrayerModeration = { requests: PrayerAdminRequest[]; replies: PrayerAdminReply[] };
 type Stats = { period_days: number; subscribers: number; bulletins: number; messages: number; unread_messages: number; unique_visitors: number; totals: Record<string, number>; daily: Array<{ day: string; visits: number; visitors: number }> };
 type View = 'closed' | 'bulletins' | 'share' | 'admin';
 
@@ -23,6 +26,8 @@ export default function BulletinCenter() {
   const [statsLoading, setStatsLoading] = useState(false);
   const [inbox, setInbox] = useState<ContactMessage[] | null>(null);
   const [inboxLoading, setInboxLoading] = useState(false);
+  const [prayerModeration, setPrayerModeration] = useState<PrayerModeration | null>(null);
+  const [prayerLoading, setPrayerLoading] = useState(false);
 
   async function loadBulletins() {
     const response = await fetch('/api/bulletins', { cache: 'no-store' });
@@ -92,6 +97,25 @@ export default function BulletinCenter() {
   function replyHref(contact: string) {
     return contact.includes('@') ? `mailto:${contact}` : `tel:${contact.replace(/[^+\d]/g, '')}`;
   }
+  async function loadPrayerModeration() {
+    if (!pin) { setMessage('Escribe el PIN para moderar el muro de oración.'); return; }
+    setPrayerLoading(true); setMessage('');
+    const response = await fetch('/api/prayers?admin=1', { cache: 'no-store', headers: { authorization: `Bearer ${pin}` } });
+    setPrayerLoading(false);
+    if (response.ok) setPrayerModeration(await response.json());
+    else setMessage(response.status === 401 ? 'PIN incorrecto.' : 'No se pudo abrir la moderación.');
+  }
+  async function moderatePrayer(kind: 'request' | 'reply', id: number, changes: { is_approved?: boolean; prayer_state?: string }) {
+    const response = await fetch('/api/prayers', { method: 'PATCH', headers: { 'content-type': 'application/json', authorization: `Bearer ${pin}` }, body: JSON.stringify({ kind, id, ...changes }) });
+    if (response.ok) await loadPrayerModeration();
+    else setMessage('No se pudo actualizar el muro de oración.');
+  }
+  async function removePrayerContent(kind: 'request' | 'reply', id: number, label: string) {
+    if (!window.confirm(`¿Borrar ${label}?`)) return;
+    const response = await fetch(`/api/prayers?kind=${kind}&id=${id}`, { method: 'DELETE', headers: { authorization: `Bearer ${pin}` } });
+    if (response.ok) await loadPrayerModeration();
+    else setMessage('No se pudo borrar el contenido.');
+  }
 
   return <>
     <div className="utility-buttons" aria-label="Compartir y boletines">
@@ -129,6 +153,25 @@ export default function BulletinCenter() {
                 <p>{item.body}</p>
                 {item.contact && <a className="inbox-contact" href={replyHref(item.contact)}>Responder: {item.contact}</a>}
                 <div className="inbox-actions"><button type="button" onClick={() => setMessageRead(item, !item.is_read)}>{item.is_read ? 'Marcar no leído' : 'Marcar leído'}</button><button className="delete-message" type="button" onClick={() => removeMessage(item)}>Borrar</button></div>
+              </article>)}
+            </div>}
+          </div>
+          <div className="prayer-admin">
+            <div className="prayer-admin-title"><div><p>Contenido moderado</p><h3>Muro de oración {prayerModeration && <span>{prayerModeration.requests.filter(item => !item.is_approved).length + prayerModeration.replies.filter(item => !item.is_approved).length} pendientes</span>}</h3></div><button className="button button-outline" type="button" onClick={loadPrayerModeration}>{prayerLoading ? 'Abriendo…' : prayerModeration ? 'Actualizar' : 'Moderar muro'}</button></div>
+            {prayerModeration && <div className="prayer-moderation">
+              <h4>Peticiones</h4>
+              {prayerModeration.requests.length === 0 && <p className="inbox-empty">Todavía no hay peticiones.</p>}
+              {prayerModeration.requests.map(item => <article className={`moderation-card${item.is_approved ? ' is-approved' : ''}`} key={`request-${item.id}`}>
+                <header><div><span>{item.category}</span><strong>{item.title}</strong><small>— {item.display_name}</small></div><b>{item.is_approved ? 'Publicada' : 'Pendiente'}</b></header>
+                <p>{item.body}</p>
+                <div className="moderation-actions"><button type="button" onClick={() => moderatePrayer('request', item.id, { is_approved: !item.is_approved })}>{item.is_approved ? 'Ocultar' : 'Aprobar'}</button><label>Estado<select value={item.prayer_state} onChange={event => moderatePrayer('request', item.id, { prayer_state: event.target.value })}><option value="new">Petición</option><option value="praying">Estamos orando</option><option value="answered">Atendida</option></select></label><button className="delete-message" type="button" onClick={() => removePrayerContent('request', item.id, `la petición “${item.title}”`)}>Borrar</button></div>
+              </article>)}
+              <h4>Respuestas</h4>
+              {prayerModeration.replies.length === 0 && <p className="inbox-empty">Todavía no hay respuestas.</p>}
+              {prayerModeration.replies.map(item => <article className={`moderation-card moderation-reply${item.is_approved ? ' is-approved' : ''}`} key={`reply-${item.id}`}>
+                <header><div><span>Respuesta a: {item.request_title}</span><strong>{item.display_name}</strong></div><b>{item.is_approved ? 'Publicada' : 'Pendiente'}</b></header>
+                <p>{item.body}</p>
+                <div className="moderation-actions"><button type="button" onClick={() => moderatePrayer('reply', item.id, { is_approved: !item.is_approved })}>{item.is_approved ? 'Ocultar' : 'Aprobar'}</button><button className="delete-message" type="button" onClick={() => removePrayerContent('reply', item.id, 'esta respuesta')}>Borrar</button></div>
               </article>)}
             </div>}
           </div>

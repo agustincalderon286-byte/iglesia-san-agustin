@@ -5,6 +5,7 @@ import BibleReader from './bible-reader';
 import AnalyticsTracker from './analytics-tracker';
 import RefreshButton from './refresh-button';
 import ContactForm from './contact-form';
+import PrayerWall from './prayer-wall';
 
 const services = [
   { day: 'Domingo', time: '9:00 AM y 12:00 PM', label: 'Santa Misa' },
@@ -22,7 +23,7 @@ export default function Home() {
           <span><strong>San Agustín</strong><small>Comunidad de fe</small></span>
         </a>
         <div className="nav-links">
-          <a href="#nosotros">Nosotros</a><a href="#biblia" data-track="bible_open">Biblia</a><a href="#misa-en-vivo">En vivo</a><a href="#horarios">Horarios</a><a href="#donaciones">Donar</a><a href="#contacto">Contacto</a>
+          <a href="#biblia" data-track="bible_open">Biblia</a><a href="#oracion">Oración</a><a href="#misa-en-vivo">En vivo</a><a href="#horarios">Horarios</a><a href="#donaciones">Donar</a><a href="#contacto">Contacto</a>
         </div>
         <div className="nav-actions"><RefreshButton /><a className="nav-cta" href="#horarios">Visítanos</a></div>
       </nav>
@@ -54,6 +55,8 @@ export default function Home() {
       </section>
 
       <BibleReader />
+
+      <PrayerWall />
 
       <LiveMass />
 
