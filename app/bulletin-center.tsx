@@ -10,6 +10,7 @@ export default function BulletinCenter() {
   const [view, setView] = useState<View>('closed');
   const [bulletins, setBulletins] = useState<Bulletin[]>([]);
   const [qr, setQr] = useState('');
+  const [shareUrl, setShareUrl] = useState('');
   const [pin, setPin] = useState('');
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
@@ -25,7 +26,9 @@ export default function BulletinCenter() {
 
   async function openShare() {
     setView('share');
-    setQr(await QRCode.toDataURL(window.location.origin, { width: 320, margin: 2, color: { dark: '#173f3a', light: '#fffdf8' } }));
+    const url = window.location.origin;
+    setShareUrl(url);
+    setQr(await QRCode.toDataURL(url, { width: 320, margin: 2, color: { dark: '#173f3a', light: '#fffdf8' } }));
   }
   async function nativeShare() {
     if (navigator.share) await navigator.share({ title: 'Iglesia San Agustín', text: 'Conoce nuestra comunidad', url: window.location.origin });
@@ -57,7 +60,7 @@ export default function BulletinCenter() {
     {view !== 'closed' && <div className="modal-backdrop" onMouseDown={() => setView('closed')}>
       <section className="bulletin-modal" role="dialog" aria-modal="true" aria-label={view === 'share' ? 'Compartir la aplicación' : 'Boletines'} onMouseDown={e => e.stopPropagation()}>
         <button className="modal-close" onClick={() => setView('closed')} aria-label="Cerrar">×</button>
-        {view === 'share' && <div className="share-panel"><p className="section-kicker">Comparte la fe</p><h2>Escanea y abre la app</h2>{qr && <img className="qr-code" src={qr} alt="Código QR para abrir Iglesia San Agustín" />}<p>Apunta la cámara del teléfono al código.</p><button className="button button-primary" onClick={nativeShare}>Compartir enlace</button></div>}
+        {view === 'share' && <div className="share-panel"><p className="section-kicker">Comparte la fe</p><h2>Invita a alguien</h2>{qr && <img className="qr-code" src={qr} alt="Código QR para abrir Iglesia San Agustín" />}<p>Escanea el código o comparte la página directamente.</p>{shareUrl && <div className="share-options" aria-label="Opciones para compartir"><a className="share-option share-sms" href={`sms:?body=${encodeURIComponent(`Te invito a conocer la Iglesia San Agustín: ${shareUrl}`)}`}><span aria-hidden="true">✉</span><strong>Mensaje</strong></a><a className="share-option share-whatsapp" href={`https://wa.me/?text=${encodeURIComponent(`Te invito a conocer la Iglesia San Agustín: ${shareUrl}`)}`} target="_blank" rel="noopener noreferrer"><span aria-hidden="true">W</span><strong>WhatsApp</strong></a><a className="share-option share-facebook" href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`} target="_blank" rel="noopener noreferrer"><span aria-hidden="true">f</span><strong>Facebook</strong></a></div>}<button className="button button-outline share-more" onClick={nativeShare}>Más opciones para compartir</button></div>}
         {view === 'bulletins' && <div><div className="modal-heading"><div><p className="section-kicker">Nuestra comunidad</p><h2>Boletines</h2></div><button className="admin-link" onClick={() => { setMessage(''); setView('admin'); }}>Administrar</button></div><div className="bulletin-list">{bulletins.length === 0 && <div className="empty-bulletin"><span>♡</span><p>Aún no hay boletines publicados.</p></div>}{bulletins.map(item => <article className="bulletin-card" key={item.id}><time>{new Date(item.created_at).toLocaleDateString('es-US', { day: 'numeric', month: 'long', year: 'numeric' })}</time><h3>{item.title}</h3><p>{item.body}</p></article>)}</div></div>}
         {view === 'admin' && <form className="admin-panel" onSubmit={publish}><p className="section-kicker">Panel privado</p><h2>Administrar</h2><label>PIN privado<input type="password" inputMode="numeric" value={pin} onChange={e => setPin(e.target.value)} required autoComplete="current-password" /></label><div className="live-admin"><h3>Misa en vivo</h3><label>Enlace de YouTube<input type="url" value={youtubeUrl} onChange={e => setYoutubeUrl(e.target.value)} placeholder="https://youtube.com/live/..." /></label><label>Enlace de Zoom<input type="url" value={zoomUrl} onChange={e => setZoomUrl(e.target.value)} placeholder="https://zoom.us/j/..." /></label><button className="button button-outline" type="button" onClick={saveLive}>Actualizar transmisión y Zoom</button></div><div className="bulletin-admin"><h3>Nuevo boletín</h3><label>Título<input value={title} onChange={e => setTitle(e.target.value)} maxLength={100} required placeholder="Ej. Misa especial este domingo" /></label><label>Mensaje<textarea value={body} onChange={e => setBody(e.target.value)} maxLength={1000} required rows={5} placeholder="Escribe aquí el anuncio para la comunidad…" /></label><button className="button button-primary" type="submit">Publicar boletín</button></div>{message && <p className="admin-message" role="status">{message}</p>}{bulletins.length > 0 && <details><summary>Administrar publicados</summary>{bulletins.map(item => <div className="admin-item" key={item.id}><span>{item.title}</span><button type="button" onClick={() => remove(item.id)}>Borrar</button></div>)}</details>}</form>}
       </section>
