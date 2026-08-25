@@ -1,4 +1,4 @@
-const CACHE = 'san-agustin-v2';
+const CACHE = 'san-agustin-v3';
 const OFFLINE = ['/', '/manifest.webmanifest', '/icon-192.png', '/icon-512.png'];
 
 self.addEventListener('install', event => event.waitUntil(
@@ -32,12 +32,14 @@ self.addEventListener('push', event => {
 self.addEventListener('notificationclick', event => {
   event.notification.close();
   const destination = new URL(event.notification.data?.url || '/', self.location.origin).href;
-  event.waitUntil(clients.matchAll({ type: 'window', includeUncontrolled: true }).then(windows => {
+  const trackOpen = fetch('/api/analytics', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ event: 'notification_open' }) }).catch(() => undefined);
+  const openApp = clients.matchAll({ type: 'window', includeUncontrolled: true }).then(windows => {
     const existing = windows.find(client => client.url.startsWith(self.location.origin));
     if (existing) {
       existing.navigate(destination);
       return existing.focus();
     }
     return clients.openWindow(destination);
-  }));
+  });
+  event.waitUntil(Promise.all([trackOpen, openApp]));
 });
