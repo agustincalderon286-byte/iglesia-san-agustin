@@ -38,7 +38,12 @@ export default function BulletinCenter() {
     event.preventDefault(); setMessage('Publicando…');
     const response = await fetch('/api/bulletins', { method: 'POST', headers: { 'content-type': 'application/json', authorization: `Bearer ${pin}` }, body: JSON.stringify({ title, body }) });
     if (!response.ok) { setMessage(response.status === 401 ? 'PIN incorrecto.' : 'No se pudo publicar.'); return; }
-    setTitle(''); setBody(''); setMessage('¡Boletín publicado!'); await loadBulletins(); setTimeout(() => setView('bulletins'), 700);
+    const published = await response.json();
+    const sent = Number(published.notifications?.sent || 0);
+    const subscribed = Number(published.notifications?.subscribed || 0);
+    setTitle(''); setBody('');
+    setMessage(subscribed > 0 ? `¡Boletín publicado y enviado a ${sent} teléfono${sent === 1 ? '' : 's'}!` : '¡Boletín publicado! Todavía no hay teléfonos suscritos.');
+    await loadBulletins(); setTimeout(() => setView('bulletins'), 1800);
   }
   async function remove(id: number) {
     if (!pin) { setMessage('Escribe el PIN para borrar.'); return; }
