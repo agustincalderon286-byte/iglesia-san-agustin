@@ -7,6 +7,7 @@ const ALLOWED_EVENTS = new Set([
   'zoom_click', 'cashapp_click', 'zelle_click', 'bulletins_open', 'bible_open',
   'share_open', 'share_sms', 'share_whatsapp', 'share_facebook', 'share_native',
   'bible_chapter', 'bible_share', 'bible_favorite', 'manual_refresh', 'contact_message',
+  'prayer_request', 'prayer_reply',
 ]);
 
 let pool: Pool | undefined;
