@@ -152,3 +152,82 @@ h1,h2 { font-family:Georgia,'Times New Roman',serif; font-weight:400; margin:0; 
 
 @media (max-width:760px) { .prayer-heading{grid-template-columns:1fr}.prayer-main-button{justify-self:start}.prayer-grid{grid-template-columns:1fr} }
 @media (max-width:560px) { .prayer-section{padding-top:75px;padding-bottom:75px}.prayer-main-button{width:100%}.moderation-note{align-items:flex-start;border-radius:14px}.prayer-modal{padding:42px 20px 24px}.prayer-form-row{grid-template-columns:1fr}.prayer-admin-title{align-items:flex-start;flex-direction:column}.prayer-admin-title .button{width:100%}.moderation-actions label{width:100%;margin:0}.moderation-actions select{flex:1} }
+
+/* Acceso compacto desde la portada y lectura en una página propia */
+.bible-preview { display:grid; grid-template-columns:1.05fr .95fr; align-items:center; gap:clamp(42px,8vw,120px); padding:92px clamp(24px,9vw,145px); background:#efe5d2; }
+.bible-preview-copy { max-width:680px; }
+.bible-preview h2 { margin:12px 0 18px; font-size:clamp(46px,5.7vw,74px); }
+.bible-preview-copy>p:not(.section-kicker) { max-width:620px; margin:0; color:var(--muted); font-size:17px; line-height:1.7; }
+.bible-preview-copy .button { margin-top:28px; }
+.bible-preview-card { position:relative; overflow:hidden; padding:34px; border:1px solid #d9cfbd; border-left:5px solid var(--terracotta); border-radius:22px; background:#fffaf1; box-shadow:0 22px 60px #59422118; }
+.bible-preview-card::after { content:'“'; position:absolute; right:20px; top:-28px; color:#e5ad582e; font:150px Georgia,serif; }
+.bible-preview-card>span { color:var(--terracotta); font-size:10px; font-weight:900; letter-spacing:.14em; text-transform:uppercase; }
+.bible-preview-card strong { display:block; margin:12px 0 10px; font:42px Georgia,serif; }
+.bible-preview-card p { position:relative; z-index:1; margin:0 0 22px; color:var(--muted); font:italic 17px/1.6 Georgia,serif; }
+.bible-preview-card a { color:var(--terracotta); font-size:13px; font-weight:900; }
+
+.bible-page { min-height:100vh; background:#efe5d2; }
+.bible-page .bible-nav { position:sticky; top:0; z-index:30; border-bottom:1px solid #e2dacb; box-shadow:0 8px 24px #173f3a0b; }
+.bible-nav-links .is-active { color:var(--terracotta); }
+.bible-page .bible-section { min-height:calc(100vh - 84px); padding-top:58px; }
+.bible-page .bible-heading { margin-bottom:26px; }
+.bible-page .bible-reader { max-width:1180px; }
+.bible-footer { background:#fffdf8; }
+
+@media (max-width:860px) {
+  .bible-preview { grid-template-columns:1fr; gap:30px; }
+  .bible-preview-card { max-width:620px; }
+}
+
+@media (max-width:620px) {
+  .bible-preview { gap:22px; padding:58px 18px; }
+  .bible-preview h2 { margin:8px 0 13px; font-size:39px; }
+  .bible-preview-copy>p:not(.section-kicker) { font-size:15px; line-height:1.55; }
+  .bible-preview-copy .button { width:100%; margin-top:21px; }
+  .bible-preview-card { padding:22px; border-radius:17px; }
+  .bible-preview-card strong { margin-block:8px; font-size:33px; }
+  .bible-preview-card p { margin-bottom:15px; font-size:15px; }
+
+  .bible-page .nav { height:68px; padding-inline:14px; }
+  .bible-page .brand { gap:8px; }
+  .bible-page .brand-mark { width:36px; height:36px; font-size:21px; }
+  .bible-page .brand strong { font-size:17px; }
+  .bible-page .brand small { display:none; }
+  .bible-page .nav-actions { gap:6px; }
+  .bible-page .refresh-button { width:38px; min-height:38px; }
+  .bible-page .bible-back { display:inline-flex; min-height:38px; padding:0 12px; font-size:11px; }
+
+  .bible-page .bible-section { min-height:0; padding:24px 12px 34px; }
+  .bible-page .bible-heading { gap:13px; margin-bottom:15px; }
+  .bible-page .bible-heading h2 { margin:5px 0 7px; font-size:38px; }
+  .bible-page .bible-heading>div>p:last-child { font-size:14px; line-height:1.45; }
+  .bible-page .daily-reading { display:grid; grid-template-columns:1fr auto; align-items:center; gap:3px 12px; padding:13px 14px; border-left-width:3px; }
+  .bible-page .daily-reading strong { margin:3px 0 0; font-size:23px; }
+  .bible-page .daily-reading p { display:none; }
+  .bible-page .daily-reading button { grid-column:2; grid-row:1 / span 2; margin:0; white-space:nowrap; }
+
+  .bible-page .bible-reader { overflow:visible; border-radius:16px; }
+  .bible-page .bible-toolbar { position:sticky; top:68px; z-index:20; display:grid; grid-template-columns:minmax(0,1fr) 76px auto; gap:7px; align-items:end; padding:10px; border:1px solid #d9cfbd; border-radius:14px 14px 0 0; box-shadow:0 8px 20px #173f3a12; }
+  .bible-page .bible-toolbar label { gap:4px; font-size:8px; letter-spacing:.08em; }
+  .bible-page .bible-toolbar select { height:39px; min-width:0; width:100%; padding:7px 25px 7px 9px; font-size:13px; }
+  .bible-page .font-controls { grid-column:auto; gap:4px; margin:0; }
+  .bible-page .font-controls button { min-width:34px; width:34px; height:39px; }
+  .bible-page .scripture { padding:18px 12px 24px; border-inline:1px solid #d9cfbd; line-height:1.58; }
+  .bible-page .scripture header { margin-bottom:14px; }
+  .bible-page .scripture header p { margin-bottom:3px; font-size:9px; }
+  .bible-page .scripture h3 { font-size:32px; }
+  .bible-page .verse-row { grid-template-columns:18px minmax(0,1fr) 63px; gap:5px; padding:7px 0; }
+  .bible-page .verse-row>sup { padding-top:5px; font-size:10px; }
+  .bible-page .verse-actions { grid-column:3; gap:3px; opacity:1; }
+  .bible-page .verse-actions button { width:29px; height:29px; font-size:15px; }
+  .bible-page .verse-row.is-targeted { margin-inline:-6px; padding-inline:6px; }
+  .bible-page .bible-license { padding:12px; border:1px solid #d9cfbd; border-top-color:#e4dccd; border-radius:0 0 14px 14px; line-height:1.4; }
+  .bible-page .bible-footer { gap:8px; padding:24px 18px; font-size:11px; }
+}
+
+@media (max-width:370px) {
+  .bible-page .brand strong { font-size:15px; }
+  .bible-page .bible-back { padding-inline:9px; }
+  .bible-page .bible-toolbar { grid-template-columns:minmax(0,1fr) 68px auto; }
+  .bible-page .font-controls button { width:31px; min-width:31px; }
+}
