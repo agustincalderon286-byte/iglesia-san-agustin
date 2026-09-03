@@ -1,7 +1,6 @@
 import PwaControls from './pwa-controls';
 import BulletinCenter from './bulletin-center';
 import LiveMass from './live-mass';
-import BibleReader from './bible-reader';
 import AnalyticsTracker from './analytics-tracker';
 import RefreshButton from './refresh-button';
 import ContactForm from './contact-form';
@@ -23,7 +22,7 @@ export default function Home() {
           <span><strong>San Agustín</strong><small>Comunidad de fe</small></span>
         </a>
         <div className="nav-links">
-          <a href="#biblia" data-track="bible_open">Biblia</a><a href="#oracion">Oración</a><a href="#misa-en-vivo">En vivo</a><a href="#horarios">Horarios</a><a href="#donaciones">Donar</a><a href="#contacto">Contacto</a>
+          <a href="/biblia" data-track="bible_open">Biblia</a><a href="#oracion">Oración</a><a href="#misa-en-vivo">En vivo</a><a href="#horarios">Horarios</a><a href="#donaciones">Donar</a><a href="#contacto">Contacto</a>
         </div>
         <div className="nav-actions"><RefreshButton /><a className="nav-cta" href="#horarios">Visítanos</a></div>
       </nav>
@@ -54,7 +53,20 @@ export default function Home() {
         <div><p>Somos una familia que celebra, aprende y sirve junta. No importa de dónde vienes o en qué momento de tu camino te encuentres: aquí hay un lugar para ti.</p><a className="text-link" href="#contacto">Quiero saber más <span>→</span></a></div>
       </section>
 
-      <BibleReader />
+      <section className="bible-preview" id="biblia">
+        <div className="bible-preview-copy">
+          <p className="section-kicker">Palabra para cada día</p>
+          <h2>La Biblia, en su propio espacio.</h2>
+          <p>Abre una lectura cómoda y enfocada, elige cualquier libro y capítulo, guarda tus versículos favoritos y compártelos con la comunidad.</p>
+          <a className="button button-primary" href="/biblia" data-track="bible_open">Abrir la Biblia <span>→</span></a>
+        </div>
+        <aside className="bible-preview-card" aria-label="Acceso a la lectura del día">
+          <span>Lectura recomendada</span>
+          <strong>Juan 3:16</strong>
+          <p>Una lectura para recordar el amor y la esperanza que nos reúne.</p>
+          <a href="/biblia?libro=43&amp;capitulo=3&amp;versiculo=16">Leer el versículo <span>→</span></a>
+        </aside>
+      </section>
 
       <PrayerWall />
 
