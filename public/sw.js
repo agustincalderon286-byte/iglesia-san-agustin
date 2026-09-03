@@ -1,5 +1,5 @@
-const CACHE = 'san-agustin-v5';
-const OFFLINE = ['/', '/manifest.webmanifest', '/icon-192.png', '/icon-512.png'];
+const CACHE = 'san-agustin-v6';
+const OFFLINE = ['/', '/biblia', '/manifest.webmanifest', '/icon-192.png', '/icon-512.png'];
 
 self.addEventListener('install', event => event.waitUntil(
   caches.open(CACHE).then(cache => cache.addAll(OFFLINE)).then(() => self.skipWaiting())
