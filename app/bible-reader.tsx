@@ -82,11 +82,10 @@ export default function BibleReader() {
   }
 
   function verseUrl(bookValue: number, chapterValue: number, verseValue: number) {
-    const url = new URL('/', window.location.origin);
+    const url = new URL('/biblia', window.location.origin);
     url.searchParams.set('libro', String(bookValue));
     url.searchParams.set('capitulo', String(chapterValue));
     url.searchParams.set('versiculo', String(verseValue));
-    url.hash = 'biblia';
     return url.toString();
   }
 
